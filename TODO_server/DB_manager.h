@@ -22,10 +22,11 @@ public:
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
+	codes connectUser(string email, string password);
 	codes createNewTodoList(string listName);
-	codes addTask(string listName, string task);
-	codes deleteTask(string listName, string task);
-	codes markTask(string listName, string task);
+	codes addTask(int userId, string listName, string task);
+	codes markTask(int userId, string listName, string task);
+	
 
 
 private:
@@ -33,5 +34,7 @@ private:
 	sqlite3* _DB;
 	bool createDbFiles(string DbAddr);
 	bool createTables();
+	int getUserIdByEmail(string email);
+	int getTableIdByName(string email);
 	
 };

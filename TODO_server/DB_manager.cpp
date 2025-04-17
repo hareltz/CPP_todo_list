@@ -18,22 +18,22 @@ codes DB_manager::deleteUser(string email, string password)
 	return codes();
 }
 
+codes DB_manager::connectUser(string email, string password)
+{
+    return codes();
+}
+
 codes DB_manager::createNewTodoList(string listName)
 {
 	return codes();
 }
 
-codes DB_manager::addTask(string listName, string task)
+codes DB_manager::addTask(int userId, string listName, string task)
 {
 	return codes();
 }
 
-codes DB_manager::deleteTask(string listName, string task)
-{
-	return codes();
-}
-
-codes DB_manager::markTask(string listName, string task)
+codes DB_manager::markTask(int userId, string listName, string task)
 {
 	return codes();
 }
@@ -106,4 +106,14 @@ bool DB_manager::createTables()
     }
 
     return true;
+}
+
+int DB_manager::getUserIdByEmail(string email)
+{
+    return 0;
+}
+
+int DB_manager::getTableIdByName(string email)
+{
+    return 0;
 }
