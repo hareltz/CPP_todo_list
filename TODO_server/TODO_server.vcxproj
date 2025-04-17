@@ -127,7 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DB_manager.cpp" />
     <ClCompile Include="TODO_server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DB_manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
