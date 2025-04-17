@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{466ee268-9527-4fac-be41-34176c747cf9}</ProjectGuid>
+    <ProjectGuid>{e92fd24b-f23e-402d-9154-65caa19582d1}</ProjectGuid>
     <RootNamespace>TODOserver</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
