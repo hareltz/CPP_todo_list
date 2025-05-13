@@ -5,11 +5,12 @@ using namespace std;
 
 enum codes
 {
-	SUCCESS = 0,
-	ERROR = 1,
-	LIST_NOT_FOUND = 2,
-	ALREADY_LIST_NAMED = 3,
-	DATABASE_ERROR = 4
+	SUCCESS,
+	ERROR,
+	LIST_NOT_FOUND,
+	ALREADY_LIST_NAMED,
+	DATABASE_ERROR, 
+	EMAIL_EXISTS
 };
 
 class DB_manager
@@ -22,10 +23,10 @@ public:
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
-	codes connectUser(string email, string password);
 	codes createNewTodoList(string listName);
 	codes addTask(int userId, string listName, string task);
 	codes markTask(int userId, string listName, string task);
+	codes checkUserPassword(string email, string password);
 	
 
 
@@ -36,5 +37,5 @@ private:
 	bool createTables();
 	int getUserIdByEmail(string email);
 	int getTableIdByName(string email);
-	
+
 };
