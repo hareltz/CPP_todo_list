@@ -66,6 +66,12 @@ codes DB_manager::deleteUser(string email, string password)
     return codes::SUCCESS;
 }
 
+/// <summary>
+/// this function add a new todo list
+/// </summary>
+/// <param name="email">the email of the user who want to add a list</param>
+/// <param name="listName">the list name</param>
+/// <returns>one of the codes</returns>
 codes DB_manager::createNewTodoList(string email, string listName)
 {
     int userId = -1;
