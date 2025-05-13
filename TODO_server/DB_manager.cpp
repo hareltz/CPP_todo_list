@@ -38,6 +38,11 @@ codes DB_manager::markTask(int userId, string listName, string task)
 	return codes();
 }
 
+/// <summary>
+/// this function create / open the DB file
+/// </summary>
+/// <param name="DbAddr">the db address </param>
+/// <returns></returns>
 bool DB_manager::createDbFiles(string DbAddr)
 {
 	// open / create the DB file
@@ -50,6 +55,13 @@ bool DB_manager::createDbFiles(string DbAddr)
 	return true;
 }
 
+/// <summary>
+/// this function creats all the tables: users, lists, tasks.
+/// </summary>
+/// <returns>
+/// true: success
+/// false: Error
+/// </returns>
 bool DB_manager::createTables()
 {
     char* errorMessage;
@@ -65,6 +77,7 @@ bool DB_manager::createTables()
     if (sqlite3_exec(this->_DB, usersTable, NULL, 0, &errorMessage) != SQLITE_OK) {
         cerr << "Error creating users table: " << errorMessage << endl;
         sqlite3_free(errorMessage);
+        return false;
     }
     else {
         cout << "Users table created successfully." << endl;
@@ -82,6 +95,7 @@ bool DB_manager::createTables()
     if (sqlite3_exec(this->_DB, listsTable, NULL, 0, &errorMessage) != SQLITE_OK) {
         cerr << "Error creating lists table: " << errorMessage << endl;
         sqlite3_free(errorMessage);
+        return false;
     }
     else {
         cout << "Lists table created successfully." << endl;
@@ -100,6 +114,7 @@ bool DB_manager::createTables()
     if (sqlite3_exec(this->_DB, tasksTable, NULL, 0, &errorMessage) != SQLITE_OK) {
         cerr << "Error creating tasks table: " << errorMessage << endl;
         sqlite3_free(errorMessage);
+        return false;
     }
     else {
         cout << "Tasks table created successfully." << endl;
