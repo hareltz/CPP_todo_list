@@ -11,8 +11,11 @@ int main()
         std::cout << "user created!" << std::endl;
     }
 
-    std::cout << db.checkUserPassword("hareltz912@gmail.com", "harel912txw") << std::endl;
-    std::cout << db.checkUserPassword("hareltz912@gmail.com", "harel912=txw") << std::endl;
+    //std::cout << db.checkUserPassword("hareltz912@gmail.com", "harel912txw") << std::endl;
+    //std::cout << db.checkUserPassword("hareltz912@gmail.com", "harel912=txw") << std::endl;
+
+    //if (db.deleteUser("hareltz912@gmail.com", "harel912dddtxw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
+    //if (db.deleteUser("hareltz912@gmail.com", "harel912txw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
 }
 
 

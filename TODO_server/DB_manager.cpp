@@ -1,5 +1,9 @@
 #include "DB_manager.h"
 
+/// <summary>
+/// c'tor
+/// </summary>
+/// <param name="DbAddr">the address/name for the DB file</param>
 DB_manager::DB_manager(string DbAddr)
 {
     if (createDbFiles(DbAddr)) { createTables(); }
@@ -38,9 +42,28 @@ codes DB_manager::createNewUser(string email, string password)
 	return codes::SUCCESS;
 }
 
+/// <summary>
+/// this function check's if the password is right
+/// if it is, the function will delete the user from the DB
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="password">the user's password</param>
+/// <returns>SUCCESS/ERROR</returns>
 codes DB_manager::deleteUser(string email, string password)
 {
-	return codes();  // todo: after getUserIdByEmail
+    if (checkUserPassword(email, password) == codes::ERROR) { return codes::PASSWORD_NOT_MATCH; } // Check if the passwords are the same.
+
+    char* errorMessage;
+    string sqlMsg = "DELETE FROM users WHERE email = '" + email + "';";
+
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK)
+    {
+        std::cerr << "Error deleting user: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+        return codes::ERROR;
+    }
+
+    return codes::SUCCESS;
 }
 
 codes DB_manager::createNewTodoList(string listName)
@@ -58,6 +81,12 @@ codes DB_manager::markTask(int userId, string listName, string task)
 	return codes();
 }
 
+/// <summary>
+/// this function check the password of the user with a callback funtion inside sqlite3_exec
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="password">the user's password</param>
+/// <returns>SUCCESS/ERROR</returns>
 codes DB_manager::checkUserPassword(string email, string password)
 {
     char* errorMessage = nullptr;
