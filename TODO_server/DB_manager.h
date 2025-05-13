@@ -1,6 +1,7 @@
 #pragma once
 #include <sqlite3.h>
 #include <iostream>
+#include <string>
 using namespace std;
 
 enum codes
@@ -8,9 +9,10 @@ enum codes
 	SUCCESS,
 	ERROR,
 	LIST_NOT_FOUND,
-	ALREADY_LIST_NAMED,
+	ALREADY_LIST_EXISTS, // -> for user
 	DATABASE_ERROR, 
-	EMAIL_EXISTS,
+	USER_EXISTS,
+	USER_NOT_EXISTS,
 	PASSWORD_NOT_MATCH
 };
 
@@ -24,9 +26,9 @@ public:
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
-	codes createNewTodoList(string listName);
-	codes addTask(int userId, string listName, string task);
-	codes markTask(int userId, string listName, string task);
+	codes createNewTodoList(string email, string listName);
+	codes addTask(string email, string listName, string task);
+	codes markTask(string email, string listName, string task);
 	codes checkUserPassword(string email, string password);
 	
 

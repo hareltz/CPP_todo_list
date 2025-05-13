@@ -16,6 +16,10 @@ int main()
 
     //if (db.deleteUser("hareltz912@gmail.com", "harel912dddtxw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
     //if (db.deleteUser("hareltz912@gmail.com", "harel912txw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
+
+    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps") << std::endl;
+    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps2") << std::endl;
+    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps2") << std::endl;
 }
 
 

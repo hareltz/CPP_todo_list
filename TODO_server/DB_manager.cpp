@@ -26,15 +26,15 @@ codes DB_manager::createNewUser(string email, string password)
 
     if ( code != SQLITE_OK)
     {
-        std::string errMsg = errorMessage ? errorMessage : "";
+        string errMsg = errorMessage ? errorMessage : "";
 
-        if (code == SQLITE_CONSTRAINT && errMsg.find("users.email") != std::string::npos) {
+        if (code == SQLITE_CONSTRAINT && errMsg.find("users.email") != string::npos) {
             sqlite3_free(errorMessage);
-            std::cerr << "SQLite error: " << errMsg << std::endl;
-            return codes::EMAIL_EXISTS;
+            cerr << "SQLite error: " << errMsg << endl;
+            return codes::USER_EXISTS;
         }
 
-        std::cerr << "SQLite error: " << errMsg << std::endl;
+        cerr << "SQLite error: " << errMsg << endl;
         sqlite3_free(errorMessage);
         return codes::ERROR;
     }
@@ -58,7 +58,7 @@ codes DB_manager::deleteUser(string email, string password)
 
     if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK)
     {
-        std::cerr << "Error deleting user: " << errorMessage << std::endl;
+        cerr << "Error deleting user: " << errorMessage << endl;
         sqlite3_free(errorMessage);
         return codes::ERROR;
     }
@@ -66,17 +66,37 @@ codes DB_manager::deleteUser(string email, string password)
     return codes::SUCCESS;
 }
 
-codes DB_manager::createNewTodoList(string listName)
+codes DB_manager::createNewTodoList(string email, string listName)
+{
+    int userId = -1;
+    char* errorMessage;
+    string sqlMsg = "";
+
+    userId = getUserIdByEmail(email);
+    if (userId == -1)
+    {
+        return codes::USER_NOT_EXISTS;
+    }
+
+    sqlMsg = "INSERT INTO lists (user_id, name) VALUES ('" + to_string(userId) + "', '" + listName + "');";
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK) {
+        std::cerr << "Error adding list: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+        return codes::ALREADY_LIST_EXISTS;
+    }
+
+    return codes::SUCCESS;
+
+}
+
+codes DB_manager::addTask(string email, string listName, string task)
 {
 	return codes();
 }
 
-codes DB_manager::addTask(int userId, string listName, string task)
-{
-	return codes();
-}
-
-codes DB_manager::markTask(int userId, string listName, string task)
+codes DB_manager::markTask(string email, string listName, string task)
 {
 	return codes();
 }
@@ -92,14 +112,14 @@ codes DB_manager::checkUserPassword(string email, string password)
     char* errorMessage = nullptr;
 
     // SQL query to get the password for the provided email
-    std::string sql = "SELECT password FROM users WHERE email = '" + email + "';";
+    string sql = "SELECT password FROM users WHERE email = '" + email + "';";
 
     // Function to execute the SQL query and fetch the password
     auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
         // If email exists, compare the password (argv[0] contains the password from DB)
         if (argc > 0 && argv[0]) {
-            std::string storedPassword = argv[0];
-            std::string providedPassword = *(static_cast<std::string*>(data));
+            string storedPassword = argv[0];
+            string providedPassword = *(static_cast<string*>(data));
 
             // Compare the passwords
             if (storedPassword == providedPassword) {
@@ -114,7 +134,7 @@ codes DB_manager::checkUserPassword(string email, string password)
 
     // Execute the query and check the result using the callback
     if (sqlite3_exec(this->_DB, sql.c_str(), callback, &password, &errorMessage) != SQLITE_OK) {
-        std::cerr << "The passwords does not match!" << std::endl;
+        cerr << "The passwords does not match!" << endl;
         sqlite3_free(errorMessage);
         return codes::ERROR;
     }
@@ -144,7 +164,7 @@ bool DB_manager::createDbFiles(string DbAddr)
     // Enable foreign keys
     exit = sqlite3_exec(this->_DB, "PRAGMA foreign_keys = ON;", nullptr, nullptr, nullptr);
     if (exit != SQLITE_OK) {
-        std::cerr << "Failed to enable foreign keys: " << sqlite3_errmsg(this->_DB) << std::endl;
+        cerr << "Failed to enable foreign keys: " << sqlite3_errmsg(this->_DB) << endl;
     }
 
 	return true;
@@ -184,7 +204,8 @@ bool DB_manager::createTables()
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
         "user_id INTEGER NOT NULL, "
         "name TEXT NOT NULL, "
-        "FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE" // "ON DELETE CASCADE" means that if i delete the user with the id that connected to this item, the item will be deleted forever. 
+        "FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE, " // "ON DELETE CASCADE" means that if i delete the user with the id that connected to this item, the item will be deleted forever. 
+        "UNIQUE(user_id, name)"  // Ensure that the combination of user_id and name is unique
         ");";
 
     if (sqlite3_exec(this->_DB, listsTable, NULL, 0, &errorMessage) != SQLITE_OK) {
@@ -218,9 +239,35 @@ bool DB_manager::createTables()
     return true;
 }
 
+/// <summary>
+/// this function get's the user id
+/// </summary>
+/// <param name="email">the user email</param>
+/// <returns>the user id</returns>
 int DB_manager::getUserIdByEmail(string email)
 {
-    return 0; // after checkUserPassword
+    char* errorMessage = nullptr;
+    int userId = -1;  // Default to -1 if the user is not found
+
+    std::string sqlMsg = "SELECT id FROM users WHERE email = '" + email + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            int* userId = static_cast<int*>(data); // Pointer to userId (of the function "getUserIdByEmail")
+            *userId = std::stoi(argv[0]);  // Set the user ID from the query result
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &userId, &errorMessage) != SQLITE_OK) {
+        std::cerr << "Error retrieving user ID: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return userId;
+
 }
 
 int DB_manager::getTableIdByName(string email)
