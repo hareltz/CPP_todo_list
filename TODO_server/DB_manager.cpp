@@ -99,11 +99,23 @@ codes DB_manager::createNewTodoList(string email, string listName)
 
 codes DB_manager::addTask(string email, string listName, string task)
 {
-	return codes();
+    // get all the lists that related to this user
+    // find if a listName exist in the lists that we got
+    // add the new task and connect it to the list
+
+    // create: ->>>>>
+    // getLists
+    // getListIdByName
+    // get tasks
+    // delete tasks
+    // maybe more, by brain is dead :(
+    return codes(); 
 }
 
 codes DB_manager::markTask(string email, string listName, string task)
 {
+    // same as add task
+    // but we will not add but update the task!
 	return codes();
 }
 
@@ -276,7 +288,7 @@ int DB_manager::getUserIdByEmail(string email)
 
 }
 
-int DB_manager::getTableIdByName(string email)
+int DB_manager::getListIdByName(string email)
 {
     return 0;
 }

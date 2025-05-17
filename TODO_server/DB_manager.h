@@ -39,6 +39,6 @@ private:
 	bool createDbFiles(string DbAddr);
 	bool createTables();
 	int getUserIdByEmail(string email);
-	int getTableIdByName(string email);
+	int getListIdByName(string email);
 
 };
