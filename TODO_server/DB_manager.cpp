@@ -3,12 +3,10 @@
 /// <summary>
 /// c'tor
 /// </summary>
-/// <param name="DbAddr">the address/name for the DB file</param>
-DB_manager::DB_manager(string DbAddr)
+DB_manager::DB_manager()
 {
-    if (createDbFiles(DbAddr)) { createTables(); }
+    if (createDbFiles("db.db")) { createTables(); }
 	// creates the tables in the DB file
-
 }
 
 /// <summary>
@@ -108,7 +106,7 @@ codes DB_manager::addTask(string email, string listName, string task)
     // getListIdByName
     // get tasks
     // delete tasks
-    // maybe more, by brain is dead :(
+    // maybe more, my brain is dead :(
     return codes(); 
 }
 
@@ -267,20 +265,20 @@ int DB_manager::getUserIdByEmail(string email)
     char* errorMessage = nullptr;
     int userId = -1;  // Default to -1 if the user is not found
 
-    std::string sqlMsg = "SELECT id FROM users WHERE email = '" + email + "';";
+    string sqlMsg = "SELECT id FROM users WHERE email = '" + email + "';";
 
     // Callback function to handle the query result
     auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
         if (argc > 0 && argv[0]) {
             int* userId = static_cast<int*>(data); // Pointer to userId (of the function "getUserIdByEmail")
-            *userId = std::stoi(argv[0]);  // Set the user ID from the query result
+            *userId = stoi(argv[0]);  // Set the user ID from the query result
         }
         return 0;
         };
 
     // Execute the query and pass the callback
     if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &userId, &errorMessage) != SQLITE_OK) {
-        std::cerr << "Error retrieving user ID: " << errorMessage << std::endl;
+        cerr << "Error retrieving user ID: " << errorMessage << endl;
         sqlite3_free(errorMessage);
     }
 
@@ -288,7 +286,34 @@ int DB_manager::getUserIdByEmail(string email)
 
 }
 
-int DB_manager::getListIdByName(string email)
+/// <summary>
+/// this function get's the list id
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <returns>the list id</returns>
+int DB_manager::getListIdByName(string email, string listName)
 {
-    return 0;
+    int userId = getUserIdByEmail(email);
+    char* errorMessage = nullptr;
+    int listId = -1;  // Default to -1 if the user is not found
+
+    string sqlMsg = "SELECT id FROM lists WHERE user_id = '" + to_string(userId) + "' AND name = '" + listName + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            int* listId = static_cast<int*>(data); // Pointer to listId (of the function "getListIdByName")
+            *listId = stoi(argv[0]);  // Set the user ID from the query result
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &listId, &errorMessage) != SQLITE_OK) {
+        cerr << "Error retrieving list ID: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return listId;
 }

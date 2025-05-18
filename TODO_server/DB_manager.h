@@ -2,6 +2,7 @@
 #include <sqlite3.h>
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 enum codes
@@ -16,13 +17,23 @@ enum codes
 	PASSWORD_NOT_MATCH
 };
 
+/// <summary>
+/// this class will manage the DB
+/// this class is also Singleton class
+/// </summary>
+/// <param name="DbAddr">the DB</param>
 class DB_manager
 {
 
 public:
 
-	DB_manager() = default;
-	DB_manager(string DbAddr);
+	static DB_manager& getInstance()
+	{
+		// the first call of the function will create the only DB_manager instance in the program
+		// the other calls will just return the same instance
+		static DB_manager instance;
+		return instance;
+	};
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
@@ -30,15 +41,25 @@ public:
 	codes addTask(string email, string listName, string task);
 	codes markTask(string email, string listName, string task);
 	codes checkUserPassword(string email, string password);
+	vector<string> getLists(string email);
 	
-
 
 private:
 
 	sqlite3* _DB;
+
+	DB_manager();
+
+	// delete all the default c'tors
+	DB_manager(const DB_manager&) = delete;
+	DB_manager(DB_manager&&) = delete;
+	DB_manager& operator=(const DB_manager&) = delete;
+	DB_manager& operator=(DB_manager&&) = delete;
+
+
 	bool createDbFiles(string DbAddr);
 	bool createTables();
 	int getUserIdByEmail(string email);
-	int getListIdByName(string email);
+	int getListIdByName(string email, string listName);
 
 };

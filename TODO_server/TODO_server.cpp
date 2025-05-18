@@ -4,7 +4,7 @@
 int main()
 {
     std::cout << "Hello World!\n";
-    DB_manager db("db_name.db");
+    DB_manager& db = DB_manager::getInstance();
 
     if (db.createNewUser("hareltz912@gmail.com", "harel912txw") == codes::SUCCESS)
     {
