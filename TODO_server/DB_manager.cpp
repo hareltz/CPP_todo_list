@@ -101,6 +101,37 @@ codes DB_manager::addList(string email, string listName)
 }
 
 /// <summary>
+/// this function return's all the lists that connected to the email (user)
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <returns>a vector with all the list names</returns>
+vector<string> DB_manager::getLists(string email)
+{
+    int userId = getUserIdByEmail(email);
+    char* errorMessage = nullptr;
+    vector<string> names;
+
+    string sqlMsg = "SELECT name FROM lists WHERE user_id = '" + to_string(userId) + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            std::vector<std::string>* names = static_cast<std::vector<std::string>*>(data); // Pointer to names (of the function "getLists")
+            names->emplace_back(argv[0]);  // Add the name to the vector
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &names, &errorMessage) != SQLITE_OK) {
+        cerr << "Error retrieving names: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return names;
+}
+
+/// <summary>
 /// this function adds a task to the list
 /// </summary>
 /// <param name="email">the user's email</param>
@@ -199,6 +230,63 @@ codes DB_manager::unmarkTask(string email, string listName, string task)
     return codes::SUCCESS;
 }
 
+codes DB_manager::deleteTask(string email, string password, string listName, string task)
+{
+    if (checkUserPassword(email, password) == codes::ERROR) { return codes::PASSWORD_NOT_MATCH; } // Check if the passwords are the same.
+
+    char* errorMessage;
+    int listId = getListIdByName(email, listName);
+    if (listId == -1) { return codes::LIST_NOT_EXISTS; } // check if the list exist
+    string sqlMsg = "DELETE FROM tasks WHERE list_id = '" + to_string(listId) + "' AND task = '" + task + "';";
+
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK)
+    {
+        cerr << "Error deleting user: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+        return codes::ERROR;
+    }
+
+    return codes::SUCCESS;
+}
+
+/// <summary>
+/// this function returns all of the task from the list
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <returns>vector with all of the tasks</returns>
+vector<string> DB_manager::getTasks(string email, string listName)
+{
+    // get all the lists that related to this user
+    vector<string> lists = getLists(email);
+    bool listExists = false;
+    int listId = getListIdByName(email, listName);
+
+    if (listId == -1) { return vector<string>(); } // check if the list exist
+
+    char* errorMessage = nullptr;
+    vector<string> tasks;
+
+    string sqlMsg = "SELECT task FROM tasks WHERE list_id = '" + to_string(listId) + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            std::vector<std::string>* tasks = static_cast<std::vector<std::string>*>(data); // Pointer to tasks (of the function "getTasks")
+            tasks->emplace_back(argv[0]);  // Add the name to the vector
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &tasks, &errorMessage) != SQLITE_OK) {
+        cerr << "Error retrieving tasks: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return tasks;
+}
+
 /// <summary>
 /// this function check the password of the user with a callback funtion inside sqlite3_exec
 /// </summary>
@@ -238,75 +326,6 @@ codes DB_manager::checkUserPassword(string email, string password)
     }
 
     return codes::SUCCESS;
-}
-
-/// <summary>
-/// this function return's all the lists that connected to the email (user)
-/// </summary>
-/// <param name="email">the user's email</param>
-/// <returns>a vector with all the list names</returns>
-vector<string> DB_manager::getLists(string email)
-{
-    int userId = getUserIdByEmail(email);
-    char* errorMessage = nullptr;
-    vector<string> names;
-
-    string sqlMsg = "SELECT name FROM lists WHERE user_id = '" + to_string(userId) + "';";
-
-    // Callback function to handle the query result
-    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
-        if (argc > 0 && argv[0]) {
-            std::vector<std::string>* names = static_cast<std::vector<std::string>*>(data); // Pointer to names (of the function "getLists")
-            names->emplace_back(argv[0]);  // Add the name to the vector
-        }
-        return 0;
-        };
-
-    // Execute the query and pass the callback
-    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &names, &errorMessage) != SQLITE_OK) {
-        cerr << "Error retrieving names: " << errorMessage << endl;
-        sqlite3_free(errorMessage);
-    }
-
-    return names;
-}
-
-/// <summary>
-/// this function returns all of the task from the list
-/// </summary>
-/// <param name="email">the user's email</param>
-/// <param name="listName">the list name</param>
-/// <returns>vector with all of the tasks</returns>
-vector<string> DB_manager::getTasks(string email, string listName)
-{
-    // get all the lists that related to this user
-    vector<string> lists = getLists(email);
-    bool listExists = false;
-    int listId = getListIdByName(email, listName);
-
-    if (listId == -1) { return vector<string>(); } // check if the list exist
-
-    char* errorMessage = nullptr;
-    vector<string> tasks;
-
-    string sqlMsg = "SELECT task FROM tasks WHERE list_id = '" + to_string(listId) + "';";
-
-    // Callback function to handle the query result
-    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
-        if (argc > 0 && argv[0]) {
-            std::vector<std::string>* tasks = static_cast<std::vector<std::string>*>(data); // Pointer to tasks (of the function "getTasks")
-            tasks->emplace_back(argv[0]);  // Add the name to the vector
-        }
-        return 0;
-        };
-
-    // Execute the query and pass the callback
-    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &tasks, &errorMessage) != SQLITE_OK) {
-        cerr << "Error retrieving tasks: " << errorMessage << endl;
-        sqlite3_free(errorMessage);
-    }
-
-    return tasks;
 }
 
 /// <summary>

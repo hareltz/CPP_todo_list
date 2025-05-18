@@ -38,14 +38,17 @@ public:
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
+
 	codes addList(string email, string listName);
+	vector<string> getLists(string email);
+
 	codes addTask(string email, string listName, string task);
 	codes markTask(string email, string listName, string task);
 	codes unmarkTask(string email, string listName, string task);
-	codes checkUserPassword(string email, string password);
-	vector<string> getLists(string email);
+	codes deleteTask(string email, string password, string listName, string task);
 	vector<string> getTasks(string email, string listName);
 	
+	codes checkUserPassword(string email, string password);
 	
 
 private:
