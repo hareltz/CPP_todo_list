@@ -27,7 +27,7 @@ class DB_manager
 
 public:
 
-	static DB_manager& getInstance()
+	static DB_manager& get_instance()
 	{
 		// the first call of the function will create the only DB_manager instance in the program
 		// the other calls will just return the same instance
@@ -42,6 +42,7 @@ public:
 	codes markTask(string email, string listName, string task);
 	codes checkUserPassword(string email, string password);
 	vector<string> getLists(string email);
+	
 	
 
 private:

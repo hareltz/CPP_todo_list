@@ -158,6 +158,35 @@ codes DB_manager::checkUserPassword(string email, string password)
     return codes::SUCCESS;
 }
 
+vector<string> DB_manager::getLists(string email)
+{
+    int userId = getUserIdByEmail(email);
+    char* errorMessage = nullptr;
+    vector<string> names;
+
+    string sqlMsg = "SELECT name FROM lists WHERE user_id = '" + to_string(userId) + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            std::vector<std::string>* names = static_cast<std::vector<std::string>*>(data); // Pointer to names (of the function "getLists")
+            names->emplace_back(argv[0]);  // Add the name to the vector
+
+            cout << argv[0] << endl;
+
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &names, &errorMessage) != SQLITE_OK) {
+        cerr << "Error retrieving names: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return names;
+}
+
 /// <summary>
 /// this function create / open the DB file
 /// and enable foreign keys
