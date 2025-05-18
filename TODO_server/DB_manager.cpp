@@ -70,7 +70,7 @@ codes DB_manager::deleteUser(string email, string password)
 /// <param name="email">the email of the user who want to add a list</param>
 /// <param name="listName">the list name</param>
 /// <returns>one of the codes</returns>
-codes DB_manager::createNewTodoList(string email, string listName)
+codes DB_manager::addList(string email, string listName)
 {
     int userId = -1;
     char* errorMessage;
@@ -85,36 +85,118 @@ codes DB_manager::createNewTodoList(string email, string listName)
     sqlMsg = "INSERT INTO lists (user_id, name) VALUES ('" + to_string(userId) + "', '" + listName + "');";
 
     // Execute the query and pass the callback
-    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK) {
+    int code = sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage);
+    if (code != SQLITE_OK) {
         std::cerr << "Error adding list: " << errorMessage << std::endl;
         sqlite3_free(errorMessage);
-        return codes::ALREADY_LIST_EXISTS;
+        if (code == SQLITE_CONSTRAINT_UNIQUE)
+        {
+            return codes::LIST_ALREADY_EXISTS;
+        }
+        return codes::ERROR;
     }
 
     return codes::SUCCESS;
 
 }
 
+/// <summary>
+/// this function adds a task to the list
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <param name="task">the task string</param>
+/// <returns>one of the codes</returns>
 codes DB_manager::addTask(string email, string listName, string task)
 {
     // get all the lists that related to this user
-    // find if a listName exist in the lists that we got
-    // add the new task and connect it to the list
+    vector<string> lists = getLists(email);
+    int listId = getListIdByName(email, listName);
 
-    // create: ->>>>>
-    // getLists
-    // getListIdByName
-    // get tasks
-    // delete tasks
-    // maybe more, my brain is dead :(
-    return codes(); 
+    if (listId == -1)
+    {
+        return codes::LIST_NOT_EXISTS;
+    }
+
+    char* errorMessage = nullptr;
+    string sqlMsg = "INSERT INTO tasks (list_id, task, done) VALUES ('" + to_string(getListIdByName(email, listName)) + "', '" + task + "', '0');"; // 0 -> false
+
+    // Execute the query and pass the callback
+    int code = sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage);
+    if (code != SQLITE_OK) {
+        std::cerr << "Error adding task: " << errorMessage << std::endl;
+        sqlite3_free(errorMessage);
+
+        if (code == SQLITE_CONSTRAINT) 
+        {
+            return codes::TASK_ALREADY_EXISTS;
+        }
+        return codes::ERROR;
+    }
+
+    return codes::SUCCESS;
 }
 
+/// <summary>
+/// this function mark a task (change the done to true)
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <param name="task">the task string</param>
+/// <returns>one of the codes</returns>
 codes DB_manager::markTask(string email, string listName, string task)
 {
-    // same as add task
-    // but we will not add but update the task!
-	return codes();
+    // get all the lists that related to this user
+    vector<string> lists = getLists(email);
+    int listId = getListIdByName(email, listName);
+
+    if (listId == -1) // checking if the list exist
+    {
+        return codes::LIST_NOT_EXISTS;
+    }
+
+    char* errorMessage = nullptr;
+    string sqlMsg = "UPDATE tasks SET done = 1 WHERE list_id = '" + to_string(listId) + "' AND task = '" + task + "';"; // 1 -> true
+
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK)
+    {
+        cerr << "Error marking task: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+        return codes::ERROR;
+    }
+
+    return codes::SUCCESS;
+}
+
+/// <summary>
+/// this function unmark a task (change the done to false)
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <param name="task">the task string</param>
+/// <returns>one of the codes</returns>
+codes DB_manager::unmarkTask(string email, string listName, string task)
+{
+    // get all the lists that related to this user
+    vector<string> lists = getLists(email);
+    int listId = getListIdByName(email, listName);
+
+    if (listId == -1) // checking if the list exist
+    {
+        return codes::LIST_NOT_EXISTS;
+    }
+
+    char* errorMessage = nullptr;
+    string sqlMsg = "UPDATE tasks SET done = 0 WHERE list_id = '" + to_string(listId) + "' AND task = '" + task + "';"; // 0 -> false
+
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), NULL, 0, &errorMessage) != SQLITE_OK)
+    {
+        cerr << "Error marking task: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+        return codes::ERROR;
+    }
+
+    return codes::SUCCESS;
 }
 
 /// <summary>
@@ -158,6 +240,11 @@ codes DB_manager::checkUserPassword(string email, string password)
     return codes::SUCCESS;
 }
 
+/// <summary>
+/// this function return's all the lists that connected to the email (user)
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <returns>a vector with all the list names</returns>
 vector<string> DB_manager::getLists(string email)
 {
     int userId = getUserIdByEmail(email);
@@ -171,9 +258,6 @@ vector<string> DB_manager::getLists(string email)
         if (argc > 0 && argv[0]) {
             std::vector<std::string>* names = static_cast<std::vector<std::string>*>(data); // Pointer to names (of the function "getLists")
             names->emplace_back(argv[0]);  // Add the name to the vector
-
-            cout << argv[0] << endl;
-
         }
         return 0;
         };
@@ -185,6 +269,44 @@ vector<string> DB_manager::getLists(string email)
     }
 
     return names;
+}
+
+/// <summary>
+/// this function returns all of the task from the list
+/// </summary>
+/// <param name="email">the user's email</param>
+/// <param name="listName">the list name</param>
+/// <returns>vector with all of the tasks</returns>
+vector<string> DB_manager::getTasks(string email, string listName)
+{
+    // get all the lists that related to this user
+    vector<string> lists = getLists(email);
+    bool listExists = false;
+    int listId = getListIdByName(email, listName);
+
+    if (listId == -1) { return vector<string>(); } // check if the list exist
+
+    char* errorMessage = nullptr;
+    vector<string> tasks;
+
+    string sqlMsg = "SELECT task FROM tasks WHERE list_id = '" + to_string(listId) + "';";
+
+    // Callback function to handle the query result
+    auto callback = [](void* data, int argc, char** argv, char** azColName) -> int {
+        if (argc > 0 && argv[0]) {
+            std::vector<std::string>* tasks = static_cast<std::vector<std::string>*>(data); // Pointer to tasks (of the function "getTasks")
+            tasks->emplace_back(argv[0]);  // Add the name to the vector
+        }
+        return 0;
+        };
+
+    // Execute the query and pass the callback
+    if (sqlite3_exec(this->_DB, sqlMsg.c_str(), callback, &tasks, &errorMessage) != SQLITE_OK) {
+        cerr << "Error retrieving tasks: " << errorMessage << endl;
+        sqlite3_free(errorMessage);
+    }
+
+    return tasks;
 }
 
 /// <summary>
@@ -269,7 +391,8 @@ bool DB_manager::createTables()
         "list_id INTEGER NOT NULL, "
         "task TEXT NOT NULL, "
         "done BOOLEAN NOT NULL DEFAULT 0, "
-        "FOREIGN KEY(list_id) REFERENCES lists(id) ON DELETE CASCADE"
+        "FOREIGN KEY(list_id) REFERENCES lists(id) ON DELETE CASCADE,"
+        "UNIQUE(list_id, task)"  // Ensure that the combination of list_id and task is unique
         ");";
 
     if (sqlite3_exec(this->_DB, tasksTable, NULL, 0, &errorMessage) != SQLITE_OK) {

@@ -17,16 +17,27 @@ int main()
     //if (db.deleteUser("hareltz912@gmail.com", "harel912dddtxw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
     //if (db.deleteUser("hareltz912@gmail.com", "harel912txw") == codes::SUCCESS) { std::cout << "good" << std::endl; }
 
-    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps") << std::endl;
-    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps2") << std::endl;
-    std::cout << db.createNewTodoList("hareltz912@gmail.com", "apps2") << std::endl;
+    //std::cout << db.addList("hareltz912@gmail.com", "apps") << std::endl;
+    //std::cout << db.addList("hareltz912@gmail.com", "apps2") << std::endl;
+    //std::cout << db.addList("hareltz912@gmail.com", "apps2") << std::endl;
 
-    vector<string> names = db.getLists("hareltz912@gmail.com");
-    
-    for (string name : names)
-    {
-        cout << name << endl;
-    }
+
+    //std::cout << db.addTask("hareltz912@gmail.com", "apps2", "task1") << std::endl;
+    //std::cout << db.addTask("hareltz912@gmail.com", "apps2", "task2") << std::endl;
+    //std::cout << db.addTask("hareltz912@gmail.com", "apps2", "task3") << std::endl;
+    //std::cout << db.addTask("hareltz912@gmail.com", "apps2", "task4") << std::endl;
+
+    std::cout << db.markTask("hareltz912@gmail.com", "apps2", "task4") << std::endl;
+    std::cout << db.markTask("hareltz912@gmail.com", "apps2", "task2") << std::endl;
+    std::cout << db.unmarkTask("hareltz912@gmail.com", "apps2", "task4") << std::endl;
+
+
+    //vector<string> tasks = db.getTasks("hareltz912@gmail.com", "apps2");
+
+    //for (string t : tasks)
+    //{
+    //    cout << t << endl;
+    //}
 }
 
 

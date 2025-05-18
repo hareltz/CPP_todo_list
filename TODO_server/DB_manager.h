@@ -9,8 +9,9 @@ enum codes
 {
 	SUCCESS,
 	ERROR,
-	LIST_NOT_FOUND,
-	ALREADY_LIST_EXISTS, // -> for user
+	LIST_NOT_EXISTS,
+	LIST_ALREADY_EXISTS, // -> for user
+	TASK_ALREADY_EXISTS, // -> for user
 	DATABASE_ERROR, 
 	USER_EXISTS,
 	USER_NOT_EXISTS,
@@ -37,11 +38,13 @@ public:
 
 	codes createNewUser(string email, string password);
 	codes deleteUser(string email, string password);
-	codes createNewTodoList(string email, string listName);
+	codes addList(string email, string listName);
 	codes addTask(string email, string listName, string task);
 	codes markTask(string email, string listName, string task);
+	codes unmarkTask(string email, string listName, string task);
 	codes checkUserPassword(string email, string password);
 	vector<string> getLists(string email);
+	vector<string> getTasks(string email, string listName);
 	
 	
 
